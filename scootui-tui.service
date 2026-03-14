@@ -1,0 +1,20 @@
+[Unit]
+Description=TUI ScootUI Dashboard
+After=redis.service network.target
+Wants=redis.service
+Conflicts=scootui.service scootui-lvgl.service
+
+[Service]
+Type=simple
+ExecStart=/data/scootui-tui
+Restart=always
+RestartSec=5
+User=root
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty1
+StandardError=journal
+Environment=TERM=linux
+
+[Install]
+WantedBy=multi-user.target
