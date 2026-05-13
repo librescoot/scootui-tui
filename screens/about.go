@@ -51,7 +51,7 @@ func RenderAbout(
 	// Title
 	lines = append(lines,
 		lipgloss.NewStyle().Width(width).Align(lipgloss.Center).
-			Render(aboutTitleStyle.Render("LibreScoot")))
+			Render(aboutTitleStyle.Render("Librescoot")))
 	lines = append(lines,
 		lipgloss.NewStyle().Width(width).Align(lipgloss.Center).
 			Render(aboutDimStyle.Render("ScootUI-TUI")))
@@ -66,7 +66,7 @@ func RenderAbout(
 
 	// License
 	year := time.Now().Year()
-	copyright := fmt.Sprintf("CC BY-NC-SA 4.0  2025-%d LibreScoot", year)
+	copyright := fmt.Sprintf("CC BY-NC-SA 4.0  2025-%d Librescoot", year)
 	lines = append(lines,
 		lipgloss.NewStyle().Width(width).Align(lipgloss.Center).
 			Render(aboutDimStyle.Render(copyright)))
