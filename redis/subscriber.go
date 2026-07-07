@@ -74,10 +74,10 @@ func (s *Subscriber) Close() {
 
 // PollingManager manages periodic polling of Redis keys
 type PollingManager struct {
-	client  *Client
-	timers  map[string]*time.Timer
-	ctx     context.Context
-	cancel  context.CancelFunc
+	client *Client
+	timers map[string]*time.Timer
+	ctx    context.Context
+	cancel context.CancelFunc
 }
 
 // NewPollingManager creates a new polling manager

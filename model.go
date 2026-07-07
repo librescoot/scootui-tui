@@ -15,10 +15,10 @@ import (
 type Screen int
 
 const (
-	ScreenCluster    Screen = iota
+	ScreenCluster Screen = iota
 	ScreenNavigation
-	ScreenSettings // overlay, only when parked
-	ScreenAbout    // overlay, entered from settings menu
+	ScreenSettings     // overlay, only when parked
+	ScreenAbout        // overlay, entered from settings menu
 	numMainScreens = 2 // only Cluster and Navigation cycle
 )
 

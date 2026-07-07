@@ -20,11 +20,11 @@ const (
 // MenuItem represents a single menu entry.
 type MenuItem struct {
 	Label    string
-	Key      string       // Redis settings key (for Toggle/Cycle)
+	Key      string // Redis settings key (for Toggle/Cycle)
 	Type     MenuItemType
-	Options  []string     // For Cycle type: available values
-	Value    string       // Current value (for Toggle/Cycle display)
-	Children []MenuItem   // For Submenu type
+	Options  []string   // For Cycle type: available values
+	Value    string     // Current value (for Toggle/Cycle display)
+	Children []MenuItem // For Submenu type
 }
 
 // MenuLevel represents one level of the menu hierarchy.
@@ -35,9 +35,9 @@ type MenuLevel struct {
 
 // MenuState holds the state of the hierarchical menu.
 type MenuState struct {
-	Stack   []MenuLevel
-	Cursor  int
-	Scroll  int // scroll offset for long menus
+	Stack  []MenuLevel
+	Cursor int
+	Scroll int // scroll offset for long menus
 }
 
 // NewMenuState creates a new menu state with the given root items.
@@ -221,4 +221,3 @@ func RenderMenu(state *MenuState, maxVisible int, width int) string {
 
 	return b.String()
 }
-

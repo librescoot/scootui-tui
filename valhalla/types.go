@@ -27,10 +27,10 @@ type RouteResponse struct {
 
 // Trip contains route information
 type Trip struct {
-	Summary  Summary    `json:"summary"`
-	Legs     []Leg      `json:"legs"`
-	Status   int        `json:"status"`
-	StatusMessage string `json:"status_message,omitempty"`
+	Summary       Summary `json:"summary"`
+	Legs          []Leg   `json:"legs"`
+	Status        int     `json:"status"`
+	StatusMessage string  `json:"status_message,omitempty"`
 }
 
 // Summary contains route summary
@@ -47,53 +47,53 @@ type Leg struct {
 
 // Maneuver represents a turn instruction
 type Maneuver struct {
-	Type              int     `json:"type"`
-	Instruction       string  `json:"instruction"`
-	StreetNames       []string `json:"street_names,omitempty"`
-	Length            float64 `json:"length"` // km
-	Time              float64 `json:"time"`   // seconds
-	BeginShapeIndex   int     `json:"begin_shape_index"`
-	EndShapeIndex     int     `json:"end_shape_index"`
-	RoundaboutExitCount int   `json:"roundabout_exit_count,omitempty"`
+	Type                int      `json:"type"`
+	Instruction         string   `json:"instruction"`
+	StreetNames         []string `json:"street_names,omitempty"`
+	Length              float64  `json:"length"` // km
+	Time                float64  `json:"time"`   // seconds
+	BeginShapeIndex     int      `json:"begin_shape_index"`
+	EndShapeIndex       int      `json:"end_shape_index"`
+	RoundaboutExitCount int      `json:"roundabout_exit_count,omitempty"`
 }
 
 // Maneuver types (from Valhalla documentation)
 const (
-	ManeuverStart               = 1
-	ManeuverStartRight          = 2
-	ManeuverStartLeft           = 3
-	ManeuverDestination         = 4
-	ManeuverDestinationRight    = 5
-	ManeuverDestinationLeft     = 6
-	ManeuverBecomes             = 7
-	ManeuverContinue            = 8
-	ManeuverSlightRight         = 9
-	ManeuverRight               = 10
-	ManeuverSharpRight          = 11
-	ManeuverUturnRight          = 12
-	ManeuverUturnLeft           = 13
-	ManeuverSharpLeft           = 14
-	ManeuverLeft                = 15
-	ManeuverSlightLeft          = 16
-	ManeuverRampStraight        = 17
-	ManeuverRampRight           = 18
-	ManeuverRampLeft            = 19
-	ManeuverExitRight           = 20
-	ManeuverExitLeft            = 21
-	ManeuverStayStraight        = 22
-	ManeuverStayRight           = 23
-	ManeuverStayLeft            = 24
-	ManeuverMerge               = 25
-	ManeuverRoundaboutEnter     = 26
-	ManeuverRoundaboutExit      = 27
-	ManeuverFerryEnter          = 28
-	ManeuverFerryExit           = 29
-	ManeuverTransit             = 30
-	ManeuverTransitTransfer     = 31
-	ManeuverTransitRemainOn     = 32
-	ManeuverTransitConnectionStart = 33
-	ManeuverTransitConnectionTransfer = 34
-	ManeuverTransitConnectionDestination = 35
+	ManeuverStart                            = 1
+	ManeuverStartRight                       = 2
+	ManeuverStartLeft                        = 3
+	ManeuverDestination                      = 4
+	ManeuverDestinationRight                 = 5
+	ManeuverDestinationLeft                  = 6
+	ManeuverBecomes                          = 7
+	ManeuverContinue                         = 8
+	ManeuverSlightRight                      = 9
+	ManeuverRight                            = 10
+	ManeuverSharpRight                       = 11
+	ManeuverUturnRight                       = 12
+	ManeuverUturnLeft                        = 13
+	ManeuverSharpLeft                        = 14
+	ManeuverLeft                             = 15
+	ManeuverSlightLeft                       = 16
+	ManeuverRampStraight                     = 17
+	ManeuverRampRight                        = 18
+	ManeuverRampLeft                         = 19
+	ManeuverExitRight                        = 20
+	ManeuverExitLeft                         = 21
+	ManeuverStayStraight                     = 22
+	ManeuverStayRight                        = 23
+	ManeuverStayLeft                         = 24
+	ManeuverMerge                            = 25
+	ManeuverRoundaboutEnter                  = 26
+	ManeuverRoundaboutExit                   = 27
+	ManeuverFerryEnter                       = 28
+	ManeuverFerryExit                        = 29
+	ManeuverTransit                          = 30
+	ManeuverTransitTransfer                  = 31
+	ManeuverTransitRemainOn                  = 32
+	ManeuverTransitConnectionStart           = 33
+	ManeuverTransitConnectionTransfer        = 34
+	ManeuverTransitConnectionDestination     = 35
 	ManeuverPostTransitConnectionDestination = 36
 )
 

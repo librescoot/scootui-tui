@@ -7,8 +7,8 @@ type Control int
 
 const (
 	ControlLeft  Control = iota // Left brake
-	ControlRight               // Right brake
-	ControlSeat                // Seatbox button
+	ControlRight                // Right brake
+	ControlSeat                 // Seatbox button
 )
 
 // Gesture identifies a detected gesture.

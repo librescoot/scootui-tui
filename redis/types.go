@@ -92,18 +92,18 @@ const (
 
 // VehicleData contains vehicle hardware state
 type VehicleData struct {
-	BlinkerState       BlinkerState
-	BlinkerSwitch      BlinkerState
-	BrakeLeft          OnOffState
-	BrakeRight         OnOffState
-	Kickstand          UpDownState
-	State              VehicleState
-	HandleBarLockSensor OnOffState
-	HandleBarPosition  string
-	SeatboxButton      OnOffState
-	SeatboxLock        OpenClosedState
-	HornButton         OnOffState
-	IsUnableToDrive    OnOffState
+	BlinkerState         BlinkerState
+	BlinkerSwitch        BlinkerState
+	BrakeLeft            OnOffState
+	BrakeRight           OnOffState
+	Kickstand            UpDownState
+	State                VehicleState
+	HandleBarLockSensor  OnOffState
+	HandleBarPosition    string
+	SeatboxButton        OnOffState
+	SeatboxLock          OpenClosedState
+	HornButton           OnOffState
+	IsUnableToDrive      OnOffState
 	AutoStandbyRemaining int
 }
 
@@ -135,23 +135,23 @@ func (e *EngineData) SpeedKmh() float64 {
 
 // BatteryData contains battery pack data
 type BatteryData struct {
-	ID              int
-	Present         bool
-	State           BatteryState
-	Voltage         int64 // millivolts
-	Current         int64 // milliamps
-	Charge          int   // 0-100%
-	Temperature0    int   // celsius
-	Temperature1    int   // celsius
-	Temperature2    int   // celsius
-	Temperature3    int   // celsius
-	TemperatureState string
-	CycleCount      int
-	StateOfHealth   int // 0-100%
-	SerialNumber    string
+	ID                int
+	Present           bool
+	State             BatteryState
+	Voltage           int64 // millivolts
+	Current           int64 // milliamps
+	Charge            int   // 0-100%
+	Temperature0      int   // celsius
+	Temperature1      int   // celsius
+	Temperature2      int   // celsius
+	Temperature3      int   // celsius
+	TemperatureState  string
+	CycleCount        int
+	StateOfHealth     int // 0-100%
+	SerialNumber      string
 	ManufacturingDate string
-	FirmwareVersion string
-	Faults          []int
+	FirmwareVersion   string
+	Faults            []int
 }
 
 // GpsData contains GPS telemetry
