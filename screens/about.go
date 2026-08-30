@@ -28,7 +28,6 @@ var (
 			Foreground(lipgloss.Color("240"))
 )
 
-// FOSS components used by scootui-tui
 var fossComponents = [][2]string{
 	{"Bubble Tea", "MIT"},
 	{"Lip Gloss", "MIT"},
@@ -36,7 +35,6 @@ var fossComponents = [][2]string{
 	{"Go", "BSD-3-Clause"},
 }
 
-// RenderAbout renders the About & Licenses screen content, matching scootui.
 func RenderAbout(
 	engine *redis.EngineData,
 	battery0, battery1 *redis.BatteryData,
@@ -48,7 +46,6 @@ func RenderAbout(
 ) string {
 	var lines []string
 
-	// Title
 	lines = append(lines,
 		lipgloss.NewStyle().Width(width).Align(lipgloss.Center).
 			Render(aboutTitleStyle.Render("Librescoot")))
@@ -64,7 +61,6 @@ func RenderAbout(
 			Render(aboutLabelStyle.Render("https://librescoot.org")))
 	lines = append(lines, "")
 
-	// License
 	year := time.Now().Year()
 	copyright := fmt.Sprintf("CC BY-NC-SA 4.0  2025-%d Librescoot", year)
 	lines = append(lines,
@@ -72,13 +68,11 @@ func RenderAbout(
 			Render(aboutDimStyle.Render(copyright)))
 	lines = append(lines, "")
 
-	// Version info
 	lines = append(lines, aboutTitleStyle.Render("VERSION"))
 	lines = append(lines, infoLine("ECU Firmware", engine.FirmwareVersion, width))
 	lines = append(lines, infoLine("Odometer", fmt.Sprintf("%.1f km", engine.Odometer/1000), width))
 	lines = append(lines, "")
 
-	// Non-commercial warning
 	lines = append(lines, aboutWarnStyle.Render("NON-COMMERCIAL SOFTWARE"))
 	lines = append(lines, wordWrap(
 		"Commercial distribution, resale, or preinstallation "+
@@ -91,19 +85,16 @@ func RenderAbout(
 			"scammed. Report at https://librescoot.org", width))
 	lines = append(lines, "")
 
-	// FOSS components
 	lines = append(lines, aboutTitleStyle.Render("OPEN SOURCE COMPONENTS"))
 	for _, comp := range fossComponents {
 		name := comp[0]
 		license := comp[1]
-		// Two-column layout
 		line := fmt.Sprintf("  %-28s %s", name, aboutDimStyle.Render(license))
 		lines = append(lines, line)
 	}
 	lines = append(lines, "")
 	lines = append(lines, aboutDimStyle.Render("L-brake: scroll  R-brake: exit"))
 
-	// Apply scroll
 	if scroll > len(lines)-height {
 		scroll = len(lines) - height
 	}
@@ -148,10 +139,9 @@ func wordWrap(text string, width int) string {
 	if width <= 0 {
 		return text
 	}
-	// Simple word wrap for the warning text
 	words := strings.Fields(text)
 	var lines []string
-	current := "  " // indent
+	current := "  "
 	for _, word := range words {
 		if len(current)+len(word)+1 > width {
 			lines = append(lines, current)

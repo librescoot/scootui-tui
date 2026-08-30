@@ -39,7 +39,6 @@ var (
 			Foreground(lipgloss.Color("240"))
 )
 
-// RenderNavigation renders the navigation screen content (no frame).
 func RenderNavigation(
 	vehicle *redis.VehicleData,
 	engine *redis.EngineData,
@@ -58,7 +57,6 @@ func RenderNavigation(
 ) string {
 	var b strings.Builder
 
-	// Compact blinkers
 	if vehicle.BlinkerState != "off" && vehicle.BlinkerState != "" && blinkerFlash {
 		b.WriteString(renderCompactBlinkers(string(vehicle.BlinkerState), width))
 		b.WriteString("\n")
@@ -70,7 +68,6 @@ func RenderNavigation(
 		b.WriteString(renderActiveRoute(route, width, height))
 	}
 
-	// Auto-standby warning
 	if warning := components.RenderAutoStandbyWarning(
 		vehicle.AutoStandbyRemaining, width); warning != "" {
 		b.WriteString("\n")
@@ -106,14 +103,11 @@ func renderActiveRoute(route *valhalla.Route, width, height int) string {
 		return ""
 	}
 
-	// Large direction icon + instruction side by side
 	iconType := fonts.ManeuverIcon(current.Type)
 	iconLines := fonts.Icons[iconType]
 
-	// Distance to the current maneuver's end (turn point)
 	dist := valhalla.FormatDistance(current.Length)
 
-	// Right-side text content
 	var rightLines []string
 	rightLines = append(rightLines, "")
 	rightLines = append(rightLines, navDistStyle.Render("In "+dist))
@@ -134,7 +128,6 @@ func renderActiveRoute(route *valhalla.Route, width, height int) string {
 		rightLines = append(rightLines, "")
 	}
 
-	// Compose side by side
 	iconWidth := fonts.IconWidth + 2
 	rightWidth := width - iconWidth
 	if rightWidth < 20 {
@@ -158,7 +151,6 @@ func renderActiveRoute(route *valhalla.Route, width, height int) string {
 		b.WriteString("\n")
 	}
 
-	// Upcoming maneuvers list (use remaining height)
 	upcoming := route.GetUpcomingManeuvers(6)
 	if len(upcoming) > 1 {
 		b.WriteString("\n")
@@ -171,7 +163,7 @@ func renderActiveRoute(route *valhalla.Route, width, height int) string {
 			dist := valhalla.FormatDistance(m.Length)
 
 			instr := m.Instruction
-			maxInstr := width - 10 // icon(2) + dist(~6) + spaces
+			maxInstr := width - 10
 			if maxInstr < 20 {
 				maxInstr = 20
 			}
@@ -186,7 +178,6 @@ func renderActiveRoute(route *valhalla.Route, width, height int) string {
 		}
 	}
 
-	// Summary bar
 	totalDist := valhalla.FormatDistance(route.TotalLength)
 	totalTime := valhalla.FormatTime(route.TotalTime)
 	b.WriteString("\n")

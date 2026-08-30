@@ -27,7 +27,6 @@ var (
 			Foreground(lipgloss.Color("240"))
 )
 
-// RenderNavigation renders the navigation display
 func RenderNavigation(route *valhalla.Route, width int) string {
 	if route == nil || len(route.Maneuvers) == 0 {
 		return ""
@@ -38,11 +37,9 @@ func RenderNavigation(route *valhalla.Route, width int) string {
 	b.WriteString(strings.Repeat("─", width))
 	b.WriteString("\n")
 
-	// Title
 	b.WriteString(navTitleStyle.Render("NAVIGATION:"))
 	b.WriteString("\n")
 
-	// Primary instruction
 	current := route.GetCurrentManeuver()
 	if current != nil {
 		icon := current.GetIcon()
@@ -56,7 +53,6 @@ func RenderNavigation(route *valhalla.Route, width int) string {
 		b.WriteString(line)
 		b.WriteString("\n")
 
-		// Secondary instruction (next maneuver)
 		next := route.GetNextManeuver()
 		if next != nil && !route.IsComplete() {
 			secondary := fmt.Sprintf("     Then %s", next.Instruction)
@@ -67,7 +63,6 @@ func RenderNavigation(route *valhalla.Route, width int) string {
 
 	b.WriteString("\n")
 
-	// Upcoming turns list
 	upcoming := route.GetUpcomingManeuvers(4)
 	if len(upcoming) > 0 {
 		b.WriteString(navSecondaryStyle.Render("  Upcoming turns:"))
@@ -90,7 +85,6 @@ func RenderNavigation(route *valhalla.Route, width int) string {
 
 	b.WriteString("\n")
 
-	// Summary bar
 	totalDist := valhalla.FormatDistance(route.TotalLength)
 	totalTime := valhalla.FormatTime(route.TotalTime)
 
@@ -102,7 +96,6 @@ func RenderNavigation(route *valhalla.Route, width int) string {
 	return b.String()
 }
 
-// RenderNoNavigation renders a message when no navigation is active
 func RenderNoNavigation() string {
 	return navSecondaryStyle.Render("  No active navigation")
 }

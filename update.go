@@ -9,7 +9,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// Update implements tea.Model
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -31,7 +30,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, fastTickCmd(), tea.Cmd(func() tea.Msg {
 			return fetchFastData(m)
 		}))
-		// Check gesture detector for holds and pending taps
 		for _, evt := range m.gestures.CheckHolds() {
 			e := evt
 			cmds = append(cmds, func() tea.Msg { return gestureMsg(e) })
@@ -106,37 +104,13 @@ func (m Model) handleButtonEvent(msg buttonEventMsg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// Always re-listen for next button event
 	gestureCmds = append(gestureCmds, m.listenButtons())
 	return m, tea.Batch(gestureCmds...)
 }
 
-// handleGesture maps physical gestures to UI actions.
-//
-// Interaction model (matching Flutter scootui):
-//
-// Main screens (Cluster / Navigation):
-//
-//	Left brake tap:         scroll through screens (cluster <-> nav)
-//	Left brake double-tap:  open settings menu
-//	Right brake tap:        (unused on main screens)
-//	Seatbox tap:            (reserved)
-//	Seatbox double-press:   toggle hazard lights (future)
-//	Seatbox hold:           show shortcut menu, items auto-cycle
-//	Seatbox release:        confirm shortcut menu selection
-//
-// Settings screen:
-//
-//	Left brake tap:         scroll down
-//	Left brake hold:        fast scroll down (repeated via tick)
-//	Right brake tap:        select / confirm
-//	Right brake hold:       go back one level (or exit settings)
-//
-// About screen:
-//
-//	Left brake tap:         scroll down
-//	Left brake hold:        fast scroll
-//	Right brake tap:        exit to cluster
+// handleGesture maps physical controls to the established scooter UI contract:
+// left-brake tap cycles screens, its double-tap opens settings only while
+// parked, and seatbox release confirms shortcut actions.
 func (m Model) handleGesture(evt input.GestureEvent) (tea.Model, tea.Cmd) {
 	switch evt.Control {
 	case input.ControlLeft:
@@ -164,7 +138,7 @@ func (m Model) handleLeftGesture(g input.Gesture) (tea.Model, tea.Cmd) {
 		}
 
 	case input.GestureDoubleTap:
-		// Open settings only when parked (matching Flutter scootui)
+		// Settings are intentionally unavailable while riding.
 		if m.activeScreen == ScreenCluster || m.activeScreen == ScreenNavigation {
 			if m.vehicle.State == "parked" || m.vehicle.State == "stand-by" {
 				m.activeScreen = ScreenSettings
@@ -197,7 +171,6 @@ func (m Model) handleRightGesture(g input.Gesture) (tea.Model, tea.Cmd) {
 		}
 
 	case input.GestureHold:
-		// Back / escape
 		switch m.activeScreen {
 		case ScreenSettings:
 			if !m.menuState.Back() {
@@ -216,19 +189,16 @@ func (m Model) handleRightGesture(g input.Gesture) (tea.Model, tea.Cmd) {
 func (m Model) handleSeatGesture(g input.Gesture) (tea.Model, tea.Cmd) {
 	switch g {
 	case input.GestureTap:
-		// Cycle between main screens only (Cluster <-> Nav)
+		// Overlays are not part of the main-screen cycle.
 		if m.activeScreen < numMainScreens {
 			m.activeScreen = (m.activeScreen + 1) % numMainScreens
 		}
 
 	case input.GestureDoubleTap:
-		// Toggle hazard lights (future: send to Redis)
 	}
 
 	return m, nil
 }
-
-// Keyboard handling (for development/testing)
 
 func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	key := msg.String()
@@ -249,7 +219,6 @@ func (m Model) handleKey(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.activeScreen = ScreenNavigation
 		return m, nil
 	case "3":
-		// Settings only when parked (keyboard override for dev)
 		m.activeScreen = ScreenSettings
 		return m, nil
 	case "4":
@@ -371,7 +340,6 @@ func (m Model) handleDataUpdate(msg dataUpdateMsg) (tea.Model, tea.Cmd) {
 
 	if msg.err != nil {
 		if m.redisClient.Connected {
-			// Was connected, now failing — show error toast
 			m.toasts.Show("Redis connection lost", components.ToastError)
 		}
 		m.redisClient.Connected = false
@@ -380,7 +348,6 @@ func (m Model) handleDataUpdate(msg dataUpdateMsg) (tea.Model, tea.Cmd) {
 	}
 
 	if !m.redisClient.Connected {
-		// Was disconnected, now recovered
 		m.toasts.Show("Redis connected", components.ToastSuccess)
 	}
 	m.redisClient.Connected = true
@@ -449,9 +416,8 @@ func (m Model) handleDataUpdate(msg dataUpdateMsg) (tea.Model, tea.Cmd) {
 		m.ota = msg.ota
 	}
 
-	// Calculate route if destination changed, or if we have a destination
-	// but no route yet (e.g. startup, or GPS fix arrived after destination).
-	// Don't retry if we already have a recent error (avoid hammering the API).
+	// Avoid retrying routes until the next destination change after an error.
+	// Do not hammer routing after an error; retry on the next destination change.
 	if !needsRoute && m.route == nil && m.routeError == "" && m.navigation.HasDestination() {
 		needsRoute = true
 	}

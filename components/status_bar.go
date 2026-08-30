@@ -26,7 +26,6 @@ var (
 			Foreground(lipgloss.Color("240"))
 )
 
-// RenderTopStatusBar renders the top status bar with battery, time, and connectivity.
 func RenderTopStatusBar(
 	battery0, battery1 *redis.BatteryData,
 	vehicle *redis.VehicleData,
@@ -38,7 +37,6 @@ func RenderTopStatusBar(
 ) string {
 	var left, right string
 
-	// Left: Battery indicators
 	if battery0.Present {
 		left += RenderBatteryCompact(battery0)
 		left += " "
@@ -54,10 +52,8 @@ func RenderTopStatusBar(
 		left += warningStyle.Render("[SLOW]") + " "
 	}
 
-	// Center: Time
 	center := time.Now().Format("15:04")
 
-	// Right: Connectivity icons
 	if settings.ShowGps != "never" {
 		right += renderGpsIcon(gps, settings.ShowGps) + " "
 	}
@@ -68,7 +64,6 @@ func RenderTopStatusBar(
 		right += renderSignalBars(internet, settings.ShowInternet) + " "
 	}
 
-	// Layout
 	totalWidth := max(width, 40)
 	centerWidth := lipgloss.Width(center)
 	sideWidth := (totalWidth - centerWidth - 2) / 2
@@ -80,7 +75,6 @@ func RenderTopStatusBar(
 	return leftPadded + " " + centerPadded + " " + rightPadded
 }
 
-// RenderBottomStatusBar renders the bottom trip statistics bar with current speed.
 func RenderBottomStatusBar(speed int, trip *redis.TripData, odometer float64, width int) string {
 	tripDist := fmt.Sprintf("%.1f", trip.DistanceKm())
 	totalDist := fmt.Sprintf("%.1f", odometer/1000)
@@ -156,7 +150,6 @@ func renderSignalBars(internet *redis.InternetData, visibility string) string {
 	return ""
 }
 
-// FormatDuration formats a duration for display.
 func FormatDuration(d time.Duration) string {
 	if d == 0 {
 		return "0:00"

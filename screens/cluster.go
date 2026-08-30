@@ -17,8 +17,6 @@ var (
 	blinkerOnStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("214"))
 )
 
-// RenderCluster renders the cluster screen content (no top/bottom bars).
-// The caller handles the frame and vertical centering.
 func RenderCluster(
 	vehicle *redis.VehicleData,
 	engine *redis.EngineData,
@@ -38,34 +36,28 @@ func RenderCluster(
 ) string {
 	var b strings.Builder
 
-	// Auto-standby warning banner (conditional)
 	if warning := components.RenderAutoStandbyWarning(
 		vehicle.AutoStandbyRemaining, width); warning != "" {
 		b.WriteString(warning)
 		b.WriteString("\n")
 	}
 
-	// Blinkers — single line
 	blinkerLine := renderClusterBlinkers(string(vehicle.BlinkerState), blinkerFlash, width)
 	if blinkerLine != "" {
 		b.WriteString(blinkerLine)
 		b.WriteString("\n")
 	}
 
-	// Speedometer (figlet, 5 lines + km/h label)
 	b.WriteString(components.RenderSpeedometer(int(engine.SpeedKmh()), width))
 	b.WriteString("\n")
 
-	// Power bar
 	power := engine.PowerOutput()
 	b.WriteString(components.RenderPowerBar(power, width))
 	b.WriteString("\n")
 
-	// Status indicators (1 line)
 	b.WriteString(components.RenderStatusIndicators(
 		vehicle, engine, battery0, battery1, speedLimit, width))
 
-	// Mini navigation preview (conditional)
 	if route != nil {
 		b.WriteString("\n")
 		b.WriteString(renderMiniNav(route, width))
@@ -80,7 +72,6 @@ func RenderCluster(
 		}
 	}
 
-	// Debug info (conditional, uses remaining space)
 	if debugMode {
 		b.WriteString("\n")
 		b.WriteString(renderDebugInfo(vehicle, engine, gps, battery0, battery1, route, width))

@@ -11,27 +11,23 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// Screen identifies the active view.
 type Screen int
 
 const (
 	ScreenCluster Screen = iota
 	ScreenNavigation
-	ScreenSettings     // overlay, only when parked
-	ScreenAbout        // overlay, entered from settings menu
-	numMainScreens = 2 // only Cluster and Navigation cycle
+	ScreenSettings
+	ScreenAbout
+	numMainScreens = 2
 )
 
-// Model holds application state
 type Model struct {
 	redisClient *redis.Client
 	width       int
 	height      int
 
-	// Active screen
 	activeScreen Screen
 
-	// Vehicle data
 	vehicle    *redis.VehicleData
 	engine     *redis.EngineData
 	battery0   *redis.BatteryData
@@ -46,33 +42,25 @@ type Model struct {
 	settings   *redis.SettingsData
 	ota        *redis.OtaData
 
-	// UI state
 	blinkerFlash bool
 	debugMode    bool
 	quitting     bool
 
-	// Navigation
 	valhallaClient *valhalla.Client
 	route          *valhalla.Route
 	routeError     string
 
-	// Menu state (for settings screen)
 	menuState components.MenuState
 
-	// About screen scroll
 	aboutScroll int
 
-	// Physical input gesture detection
 	gestures *input.GestureDetector
 
-	// Toast notifications
 	toasts components.ToastManager
 
-	// When true, ignore WindowSizeMsg and keep fixed width/height
 	fixedSize bool
 }
 
-// NewModel creates initial model
 func NewModel(redisClient *redis.Client) Model {
 	return Model{
 		redisClient:    redisClient,
@@ -95,7 +83,6 @@ func NewModel(redisClient *redis.Client) Model {
 	}
 }
 
-// Init implements tea.Model
 func (m Model) Init() tea.Cmd {
 	return tea.Batch(
 		fastTickCmd(),
@@ -106,12 +93,10 @@ func (m Model) Init() tea.Cmd {
 	)
 }
 
-// listenButtons subscribes to the buttons PUBSUB channel and forwards events.
 func (m Model) listenButtons() tea.Cmd {
 	return func() tea.Msg {
 		sub := m.redisClient.SubscribeChannel("buttons")
 		if sub == nil {
-			// Subscription failed (Redis down) — retry after a delay
 			time.Sleep(2 * time.Second)
 			return buttonRetryMsg{}
 		}
@@ -130,8 +115,6 @@ func (m Model) listenButtons() tea.Cmd {
 }
 
 type buttonRetryMsg struct{}
-
-// Messages
 
 type tickMsg time.Time
 type slowTickMsg time.Time
@@ -166,8 +149,6 @@ type buttonEventMsg struct {
 
 type gestureMsg input.GestureEvent
 
-// Commands
-
 func fastTickCmd() tea.Cmd {
 	return tea.Tick(100*time.Millisecond, func(t time.Time) tea.Msg {
 		return tickMsg(t)
@@ -200,7 +181,6 @@ func fetchFastData(m Model) tea.Msg {
 }
 
 func fetchSlowData(m Model) tea.Msg {
-	// Check connection on slow tick (1Hz)
 	if !m.redisClient.CheckConnection() {
 		return dataUpdateMsg{err: fmt.Errorf("redis: %s", m.redisClient.LastError)}
 	}
@@ -252,7 +232,6 @@ func (m Model) calculateRoute(startLat, startLon, endLat, endLon float64) tea.Cm
 	}
 }
 
-// buildSettingsMenu constructs the settings menu tree with current values.
 func buildSettingsMenu(s *redis.SettingsData) components.MenuState {
 	alarmDur := "10"
 	switch s.AlarmDuration {
@@ -349,8 +328,6 @@ func boolStr(b bool) string {
 	return "false"
 }
 
-// updateMenuValues updates the displayed values in the menu tree
-// without resetting cursor/scroll position.
 func updateMenuValues(state *components.MenuState, s *redis.SettingsData) {
 	vals := map[string]string{
 		"dashboard.theme":                s.Theme,

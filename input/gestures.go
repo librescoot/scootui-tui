@@ -2,7 +2,6 @@ package input
 
 import "time"
 
-// Control identifies a physical control.
 type Control int
 
 const (
@@ -11,7 +10,6 @@ const (
 	ControlSeat                 // Seatbox button
 )
 
-// Gesture identifies a detected gesture.
 type Gesture int
 
 const (
@@ -28,13 +26,11 @@ const (
 	seatDoublePressWin = 500 * time.Millisecond // seatbox uses wider window
 )
 
-// GestureEvent is emitted when a gesture is detected.
 type GestureEvent struct {
 	Control Control
 	Gesture Gesture
 }
 
-// detector tracks state for one control.
 type detector struct {
 	pressed     bool
 	pressTime   time.Time
@@ -42,8 +38,6 @@ type detector struct {
 	holding     bool
 }
 
-// GestureDetector detects tap, double-tap, and hold gestures from
-// raw press/release events on physical controls.
 type GestureDetector struct {
 	detectors map[Control]*detector
 	pending   []pendingTap
@@ -64,15 +58,14 @@ func NewGestureDetector() *GestureDetector {
 	}
 }
 
-// Press records a button press event.
+// Seat double-press is recognized on press (not release) to match the UI contract.
 func (g *GestureDetector) Press(ctrl Control) []GestureEvent {
 	d := g.detectors[ctrl]
 	if d == nil {
 		return nil
 	}
 
-	// Seatbox double-press detection (like Flutter's ShortcutMenuCubit):
-	// check if this press is within the double-press window of the LAST press
+	// Seatbox double presses are recognized on press, not release.
 	if ctrl == ControlSeat && !d.pressTime.IsZero() &&
 		time.Since(d.pressTime) < seatDoublePressWin {
 		d.pressed = true
@@ -88,7 +81,7 @@ func (g *GestureDetector) Press(ctrl Control) []GestureEvent {
 	return nil
 }
 
-// Release records a button release event. Returns detected gestures.
+// Release is always emitted because seatbox shortcuts confirm on release.
 func (g *GestureDetector) Release(ctrl Control) []GestureEvent {
 	d := g.detectors[ctrl]
 	if d == nil {
@@ -101,21 +94,17 @@ func (g *GestureDetector) Release(ctrl Control) []GestureEvent {
 
 	var events []GestureEvent
 
-	// Always emit Release (UI uses this for seatbox "release to confirm")
 	events = append(events, GestureEvent{Control: ctrl, Gesture: GestureRelease})
 
 	if wasHolding {
-		// Was a hold — release already emitted above, nothing more to do
 		return events
 	}
 
-	// Short press — potential tap
 	duration := time.Since(d.pressTime)
 	if duration >= tapThreshold {
 		return events
 	}
 
-	// For brakes: check double-tap
 	if ctrl != ControlSeat {
 		if !d.lastTapTime.IsZero() && time.Since(d.lastTapTime) < doubleTapWindow {
 			d.lastTapTime = time.Time{}
@@ -123,19 +112,16 @@ func (g *GestureDetector) Release(ctrl Control) []GestureEvent {
 			events = append(events, GestureEvent{Control: ctrl, Gesture: GestureDoubleTap})
 			return events
 		}
-		// Defer tap to allow double-tap detection
 		d.lastTapTime = time.Now()
 		g.pending = append(g.pending, pendingTap{control: ctrl, tapTime: d.lastTapTime})
 		return events
 	}
 
-	// Seatbox tap (double-press handled in Press())
 	events = append(events, GestureEvent{Control: ctrl, Gesture: GestureTap})
 	return events
 }
 
-// CheckHolds returns hold events for controls held past the threshold.
-// Call every ~100ms.
+// CheckHolds is tick-driven; callers must invoke it roughly every 100 ms.
 func (g *GestureDetector) CheckHolds() []GestureEvent {
 	var events []GestureEvent
 	for ctrl, d := range g.detectors {
@@ -147,8 +133,7 @@ func (g *GestureDetector) CheckHolds() []GestureEvent {
 	return events
 }
 
-// FlushPending returns single taps whose double-tap window expired.
-// Call every ~100ms.
+// FlushPending emits brake taps only after their double-tap window expires.
 func (g *GestureDetector) FlushPending() []GestureEvent {
 	var events []GestureEvent
 	var remaining []pendingTap
@@ -165,7 +150,6 @@ func (g *GestureDetector) FlushPending() []GestureEvent {
 	return events
 }
 
-// IsHolding returns whether the given control is currently held.
 func (g *GestureDetector) IsHolding(ctrl Control) bool {
 	d := g.detectors[ctrl]
 	return d != nil && d.holding
@@ -181,8 +165,7 @@ func (g *GestureDetector) cancelPending(ctrl Control) {
 	g.pending = remaining
 }
 
-// ParseButtonEvent parses a Redis PUBSUB button event.
-// Format: "brake:left:on", "seatbox:on", etc.
+// Redis PUBSUB button-event format: "brake:left:on", "seatbox:on", etc.
 func ParseButtonEvent(event string) (Control, bool, bool) {
 	switch event {
 	case "brake:left:on":

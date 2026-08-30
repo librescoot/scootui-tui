@@ -1,8 +1,5 @@
 package fonts
 
-// Large ASCII art direction icons for navigation.
-// Each icon is 7 lines tall. Designed for linux framebuffer console.
-
 type DirectionIcon int
 
 const (
@@ -134,7 +131,6 @@ var Icons = map[DirectionIcon][IconHeight]string{
 	},
 }
 
-// ManeuverIcon maps Valhalla maneuver type codes to direction icons.
 func ManeuverIcon(maneuverType int) DirectionIcon {
 	switch maneuverType {
 	case 1: // Start
@@ -180,8 +176,6 @@ func ManeuverIcon(maneuverType int) DirectionIcon {
 	}
 }
 
-// ManeuverSmallIcon returns a single-character icon for compact maneuver lists.
-// Uses only characters safe for linux console.
 func ManeuverSmallIcon(maneuverType int) string {
 	switch maneuverType {
 	case 1:

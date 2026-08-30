@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-// State structs matching Redis schema from Flutter app
-
 type VehicleState string
 
 const (
@@ -90,7 +88,6 @@ const (
 	Disconnected ConnectedState = "disconnected"
 )
 
-// VehicleData contains vehicle hardware state
 type VehicleData struct {
 	BlinkerState         BlinkerState
 	BlinkerSwitch        BlinkerState
@@ -107,7 +104,6 @@ type VehicleData struct {
 	AutoStandbyRemaining int
 }
 
-// EngineData contains motor controller data
 type EngineData struct {
 	PowerState      OnOffState
 	Kers            OnOffState
@@ -123,17 +119,14 @@ type EngineData struct {
 	Temperature     float64 // celsius
 }
 
-// PowerOutput returns motor power in watts
 func (e *EngineData) PowerOutput() float64 {
 	return float64(e.MotorVoltage) * float64(e.MotorCurrent) / 1000000.0
 }
 
-// SpeedKmh returns speed in km/h (stored as raw km/h in Redis)
 func (e *EngineData) SpeedKmh() float64 {
 	return float64(e.Speed)
 }
 
-// BatteryData contains battery pack data
 type BatteryData struct {
 	ID                int
 	Present           bool
@@ -154,7 +147,6 @@ type BatteryData struct {
 	Faults            []int
 }
 
-// GpsData contains GPS telemetry
 type GpsData struct {
 	Latitude  float64
 	Longitude float64
@@ -165,12 +157,10 @@ type GpsData struct {
 	State     GpsState
 }
 
-// HasRecentFix returns true if GPS has a fix within 10 seconds
 func (g *GpsData) HasRecentFix() bool {
 	return g.State == GpsFixEstablished && time.Since(g.Updated) < 10*time.Second
 }
 
-// NavigationData contains navigation destination
 type NavigationData struct {
 	Latitude  string
 	Longitude string
@@ -178,22 +168,18 @@ type NavigationData struct {
 	Timestamp time.Time
 }
 
-// HasDestination returns true if a destination is set
 func (n *NavigationData) HasDestination() bool {
 	return n.Latitude != "" && n.Longitude != ""
 }
 
-// LatitudeFloat returns latitude as float64
 func (n *NavigationData) LatitudeFloat() (float64, error) {
 	return strconv.ParseFloat(n.Latitude, 64)
 }
 
-// LongitudeFloat returns longitude as float64
 func (n *NavigationData) LongitudeFloat() (float64, error) {
 	return strconv.ParseFloat(n.Longitude, 64)
 }
 
-// DashboardData contains dashboard settings
 type DashboardData struct {
 	Brightness float64
 	Backlight  int
@@ -203,7 +189,6 @@ type DashboardData struct {
 	Time       time.Time
 }
 
-// InternetData contains cellular connectivity data
 type InternetData struct {
 	ModemState    ModemState
 	UnuCloud      ConnectedState
@@ -216,7 +201,6 @@ type InternetData struct {
 	SimICCID      string
 }
 
-// SignalBars returns signal strength as 0-4 bars
 func (i *InternetData) SignalBars() int {
 	if i.SignalQuality >= 80 {
 		return 4
@@ -230,7 +214,6 @@ func (i *InternetData) SignalBars() int {
 	return 0
 }
 
-// BluetoothData contains Bluetooth status
 type BluetoothData struct {
 	Status        ConnectedState
 	MacAddress    string
@@ -240,19 +223,16 @@ type BluetoothData struct {
 	LastUpdate    time.Time
 }
 
-// SpeedLimitData contains speed limit information
 type SpeedLimitData struct {
 	SpeedLimit string
 	RoadName   string
 	RoadType   string
 }
 
-// HasSpeedLimit returns true if speed limit is set
 func (s *SpeedLimitData) HasSpeedLimit() bool {
 	return s.SpeedLimit != "" && s.SpeedLimit != "none" && s.SpeedLimit != "unknown"
 }
 
-// SpeedLimitInt returns speed limit as integer (0 if not set)
 func (s *SpeedLimitData) SpeedLimitInt() int {
 	if !s.HasSpeedLimit() {
 		return 0
@@ -261,7 +241,6 @@ func (s *SpeedLimitData) SpeedLimitInt() int {
 	return limit
 }
 
-// TripData tracks trip statistics
 type TripData struct {
 	StartTime    time.Time
 	Distance     float64 // meters
@@ -269,7 +248,6 @@ type TripData struct {
 	SpeedSamples int
 }
 
-// Duration returns trip duration
 func (t *TripData) Duration() time.Duration {
 	if t.StartTime.IsZero() {
 		return 0
@@ -277,7 +255,6 @@ func (t *TripData) Duration() time.Duration {
 	return time.Since(t.StartTime)
 }
 
-// AverageSpeed returns average speed in km/h
 func (t *TripData) AverageSpeed() float64 {
 	if t.SpeedSamples == 0 {
 		return 0
@@ -285,14 +262,11 @@ func (t *TripData) AverageSpeed() float64 {
 	return t.TotalSpeed / float64(t.SpeedSamples)
 }
 
-// DistanceKm returns distance in km
 func (t *TripData) DistanceKm() float64 {
 	return t.Distance / 1000.0
 }
 
-// SettingsData contains user-configurable settings from Redis.
 type SettingsData struct {
-	// Display
 	Theme              string // "dark", "light", "auto"
 	Language           string // "en", "de"
 	Mode               string // "speedometer", "navigation"
@@ -307,20 +281,16 @@ type SettingsData struct {
 	PowerDisplayMode   string // "kw", "amps"
 	ValhallaURL        string
 
-	// Battery
 	DualBattery bool
 
-	// Alarm
 	AlarmEnabled  bool
 	AlarmHonk     bool
 	AlarmDuration int // seconds
 
-	// Vehicle
 	AutoStandbySeconds int
 	EnableHorn         string // "true", "false", "in-drive"
 }
 
-// DefaultSettings returns settings with sensible defaults.
 func DefaultSettings() *SettingsData {
 	return &SettingsData{
 		Theme:              "dark",
@@ -343,7 +313,6 @@ func DefaultSettings() *SettingsData {
 	}
 }
 
-// OtaData contains OTA update state.
 type OtaData struct {
 	DbcStatus           string
 	DbcUpdateVersion    string
@@ -357,7 +326,6 @@ type OtaData struct {
 	MdbError            string
 }
 
-// IsActive returns true if an OTA update is in progress.
 func (o *OtaData) IsActive() bool {
 	return (o.DbcStatus != "" && o.DbcStatus != "idle") ||
 		(o.MdbStatus != "" && o.MdbStatus != "idle")

@@ -20,8 +20,8 @@ var (
 	separatorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("236"))
 )
 
-// View implements tea.Model.
-// Always fills exactly height lines: top frame, centered content, bottom frame.
+// View always fills the terminal height; safety/connection overlays replace the
+// normal screen before framed content is rendered.
 func (m Model) View() string {
 	if m.quitting {
 		return "Goodbye!\n"
@@ -30,35 +30,29 @@ func (m Model) View() string {
 	w := max(m.width, 60)
 	h := max(m.height, 30)
 
-	// Connection screen — fullscreen overlay
 	if !m.redisClient.Connected {
 		return m.renderFullscreenMessage(w, h, "Connecting to Redis...", m.redisClient.LastError)
 	}
 
-	// Vehicle state overlay for non-drivable states
 	if msg, show := m.vehicleStateMessage(); show {
 		return m.renderFullscreenMessage(w, h, msg, "")
 	}
 
-	// OTA overlay — fullscreen
 	if m.ota != nil && m.ota.IsActive() {
 		return m.renderOtaFullscreen(w, h)
 	}
 
-	// Normal screen rendering with frame
 	return m.renderFramed(w, h)
 }
 
-// renderFramed renders the full screen: top bar (2 lines), content (centered), bottom bar (3 lines).
+// renderFramed reserves two top and four bottom lines before centering content.
 func (m Model) renderFramed(width, height int) string {
 	sep := separatorStyle.Render(strings.Repeat("─", width))
 
-	// Top frame: status bar + separator = 2 lines
 	topBar := components.RenderTopStatusBar(
 		m.battery0, m.battery1, m.vehicle, m.gps,
 		m.bluetooth, m.internet, m.settings, width)
 
-	// Bottom frame: separator + trip + battery + tabs = 4 lines
 	tripBar := components.RenderBottomStatusBar(
 		int(m.engine.SpeedKmh()), m.trip, m.engine.Odometer, width)
 
@@ -69,13 +63,11 @@ func (m Model) renderFramed(width, height int) string {
 
 	tabsLine := m.renderScreenTabs(width)
 
-	// Content area: height - top(2) - bottom(4) = available lines
 	contentHeight := height - 6
 	if contentHeight < 10 {
 		contentHeight = 10
 	}
 
-	// Get screen content
 	var content string
 	switch m.activeScreen {
 	case ScreenCluster:
@@ -88,19 +80,15 @@ func (m Model) renderFramed(width, height int) string {
 		content = m.renderAboutContent(width, contentHeight)
 	}
 
-	// Vertically center the content within contentHeight
 	contentLines := strings.Split(content, "\n")
-	// Remove trailing empty line if present
 	if len(contentLines) > 0 && contentLines[len(contentLines)-1] == "" {
 		contentLines = contentLines[:len(contentLines)-1]
 	}
 
 	paddedContent := verticalCenter(contentLines, contentHeight, width)
 
-	// Toast overlay — replaces top content line if active
 	toastLine := components.RenderToast(&m.toasts, width)
 
-	// Assemble full screen
 	var b strings.Builder
 	b.WriteString(topBar + "\n")
 	if toastLine != "" {
@@ -117,12 +105,10 @@ func (m Model) renderFramed(width, height int) string {
 	return b.String()
 }
 
-// verticalCenter pads content lines to fill exactly `height` lines,
-// centering the content vertically.
+// verticalCenter truncates overflow but otherwise produces exactly height lines.
 func verticalCenter(lines []string, height, width int) string {
 	used := len(lines)
 	if used >= height {
-		// Content fills or exceeds available space — just join, truncate
 		return strings.Join(lines[:min(used, height)], "\n") + "\n"
 	}
 
@@ -141,8 +127,6 @@ func verticalCenter(lines []string, height, width int) string {
 	}
 	return b.String()
 }
-
-// Screen content renderers — return only the middle content, no top/bottom bars.
 
 func (m Model) renderClusterContent(width, height int) string {
 	return screens.RenderCluster(
@@ -171,7 +155,6 @@ func (m Model) renderAboutContent(width, height int) string {
 		m.aboutScroll, width, height)
 }
 
-// renderScreenTabs renders the bottom info line.
 func (m Model) renderScreenTabs(width int) string {
 	var left string
 
@@ -207,8 +190,6 @@ func (m Model) renderScreenTabs(width int) string {
 
 	return left + strings.Repeat(" ", gap) + hintStyled
 }
-
-// Fullscreen overlays
 
 func (m Model) renderFullscreenMessage(width, height int, title, detail string) string {
 	center := lipgloss.NewStyle().Width(width).Align(lipgloss.Center)

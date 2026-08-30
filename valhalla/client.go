@@ -11,13 +11,11 @@ import (
 	"time"
 )
 
-// Client is a Valhalla routing client
 type Client struct {
 	endpoint string
 	client   *http.Client
 }
 
-// NewClient creates a new Valhalla client
 func NewClient() *Client {
 	endpoint := os.Getenv("VALHALLA_ENDPOINT")
 	if endpoint == "" {
@@ -32,14 +30,12 @@ func NewClient() *Client {
 	}
 }
 
-// SetEndpoint updates the Valhalla endpoint URL.
 func (c *Client) SetEndpoint(url string) {
 	if url != "" && url != c.endpoint {
 		c.endpoint = url
 	}
 }
 
-// CalculateRoute calculates a route between two points
 func (c *Client) CalculateRoute(startLat, startLon, endLat, endLon float64) (*Route, error) {
 	req := RouteRequest{
 		Locations: []Location{
@@ -99,7 +95,6 @@ func (c *Client) CalculateRoute(startLat, startLon, endLat, endLon float64) (*Ro
 	return route, nil
 }
 
-// UpdateRouteProgress updates the current maneuver based on GPS position
 func (r *Route) UpdateRouteProgress(currentLat, currentLon float64) {
 	if r.IsComplete() {
 		return
@@ -110,12 +105,8 @@ func (r *Route) UpdateRouteProgress(currentLat, currentLon float64) {
 		return
 	}
 
-	// Calculate distance to next maneuver
-	// This is a simplified version - in production you'd track along the route polyline
 	_ = calculateDistance(currentLat, currentLon, r.EndLat, r.EndLon)
 
-	// Estimate distance to current maneuver
-	// Sum up distances of remaining maneuvers
 	var totalRemaining float64
 	for i := r.CurrentManeuver; i < len(r.Maneuvers); i++ {
 		totalRemaining += r.Maneuvers[i].Length
@@ -123,8 +114,6 @@ func (r *Route) UpdateRouteProgress(currentLat, currentLon float64) {
 
 	r.RemainingDist = totalRemaining
 
-	// Check if we should advance to next maneuver
-	// If remaining distance is less than current maneuver length, we've passed it
 	if r.CurrentManeuver < len(r.Maneuvers)-1 {
 		if currentManeuver.Length > 0 && r.RemainingDist < totalRemaining-currentManeuver.Length {
 			r.CurrentManeuver++
@@ -135,9 +124,8 @@ func (r *Route) UpdateRouteProgress(currentLat, currentLon float64) {
 	}
 }
 
-// calculateDistance calculates distance between two coordinates (Haversine formula)
 func calculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
-	const earthRadius = 6371.0 // km
+	const earthRadius = 6371.0
 
 	dLat := toRadians(lat2 - lat1)
 	dLon := toRadians(lon2 - lon1)
